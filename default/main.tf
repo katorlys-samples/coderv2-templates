@@ -36,7 +36,7 @@ resource "coder_agent" "main" {
   os             = "linux"
   startup_script = <<-EOT
     set -e
-
+    
     # Prepare user home with default files on first start.
     # if [ ! -f ~/.init_done ]; then
     #   cp -rT /etc/skel ~
@@ -81,9 +81,9 @@ data "coder_parameter" "docker_image" {
   icon        = "/icon/docker.png"
   name        = "Workspace Image"
   description = "Which workspace image do you want to use?"
-  type    = "string"
-  default = "base"
-  mutable = true
+  type        = "string"
+  default     = "base"
+  mutable     = true
 
   option {
     icon  = "/icon/nodejs.svg"
@@ -132,19 +132,19 @@ data "coder_parameter" "docker_image" {
   }
 }
 
-module "dotfiles" {
-  source   = "registry.coder.com/modules/dotfiles/coder"
-  version  = "1.0.15"
-  agent_id = coder_agent.main.id
-}
+# module "dotfiles" {
+#   source   = "registry.coder.com/modules/dotfiles/coder"
+#   version  = "1.0.15"
+#   agent_id = coder_agent.main.id
+# }
 
-module "dotfiles-root" {
-  source       = "registry.coder.com/modules/dotfiles/coder"
-  version      = "1.0.15"
-  agent_id     = coder_agent.main.id
-  user         = "root"
-  dotfiles_uri = module.dotfiles.dotfiles_uri
-}
+# module "dotfiles-root" {
+#   source       = "registry.coder.com/modules/dotfiles/coder"
+#   version      = "1.0.15"
+#   agent_id     = coder_agent.main.id
+#   user         = "root"
+#   dotfiles_uri = module.dotfiles.dotfiles_uri
+# }
 
 module "personalize" {
   source   = "registry.coder.com/modules/personalize/coder"
@@ -171,14 +171,14 @@ module "jetbrains_gateway" {
   order          = 5
 }
 
-module "vscode-web" {
-  source         = "registry.coder.com/modules/vscode-web/coder"
-  version        = "1.0.14"
-  agent_id       = coder_agent.main.id
-  folder         = "/workspace/${module.git_clone.folder_name}"
-  accept_license = true
-  order          = 4
-}
+# module "vscode-web" {
+#   source         = "registry.coder.com/modules/vscode-web/coder"
+#   version        = "1.0.14"
+#   agent_id       = coder_agent.main.id
+#   folder         = "/workspace/${module.git_clone.folder_name}"
+#   accept_license = true
+#   order          = 4
+# }
 
 # resource "coder_app" "code-server" {
 #   agent_id     = coder_agent.main.id
@@ -189,6 +189,15 @@ module "vscode-web" {
 #   subdomain    = false
 #   share        = "owner"
 # }
+
+module "dotfiles-after-vscode-web" {
+  source         = "katorlys-samples/dotfiles-after-vscode-web/coder"
+  version        = "0.1.0"
+  agent_id       = coder_agent.main.id
+  folder         = "/workspace/${module.git_clone.folder_name}"
+  accept_license = true
+  order          = 4
+}
 
 resource "docker_volume" "home_volume" {
   name = "coder-${data.coder_workspace.me.id}-home"
@@ -219,99 +228,99 @@ resource "docker_volume" "home_volume" {
 
 data "docker_registry_image" "node" {
   count = data.coder_parameter.docker_image.value == "node" ? 1 : 0
-  name = "katorly/workspace-node:latest"
+  name  = "katorly/workspace-node:latest"
 }
 
 data "docker_registry_image" "python" {
   count = data.coder_parameter.docker_image.value == "python" ? 1 : 0
-  name = "katorly/workspace-python:latest"
+  name  = "katorly/workspace-python:latest"
 }
 
 data "docker_registry_image" "java" {
   count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
-  name = "katorly/workspace-java:latest"
+  name  = "katorly/workspace-java:latest"
 }
 
 data "docker_registry_image" "c" {
   count = data.coder_parameter.docker_image.value == "c" ? 1 : 0
-  name = "katorly/workspace-c:latest"
+  name  = "katorly/workspace-c:latest"
 }
 
 data "docker_registry_image" "go" {
   count = data.coder_parameter.docker_image.value == "go" ? 1 : 0
-  name = "katorly/workspace-go:latest"
+  name  = "katorly/workspace-go:latest"
 }
 
 data "docker_registry_image" "rust" {
   count = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
-  name = "katorly/workspace-rust:latest"
+  name  = "katorly/workspace-rust:latest"
 }
 
 # data "docker_registry_image" "docker" {
 #   count = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
-#   name = "katorly/workspace-docker:latest"
+#   name  = "katorly/workspace-docker:latest"
 # }
 
 data "docker_registry_image" "embedded" {
   count = data.coder_parameter.docker_image.value == "embedded" ? 1 : 0
-  name = "katorly/workspace-embedded:latest"
+  name  = "katorly/workspace-embedded:latest"
 }
 
 data "docker_registry_image" "base" {
   count = data.coder_parameter.docker_image.value == "base" ? 1 : 0
-  name = "katorly/workspace-base:latest"
+  name  = "katorly/workspace-base:latest"
 }
 
 resource "docker_image" "node" {
-  count = data.coder_parameter.docker_image.value == "node" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "node" ? 1 : 0
   name          = data.docker_registry_image.node[0].name
   pull_triggers = [data.docker_registry_image.node[0].sha256_digest]
 }
 
 resource "docker_image" "python" {
-  count = data.coder_parameter.docker_image.value == "python" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "python" ? 1 : 0
   name          = data.docker_registry_image.python[0].name
   pull_triggers = [data.docker_registry_image.python[0].sha256_digest]
 }
 
 resource "docker_image" "java" {
-  count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "java" ? 1 : 0
   name          = data.docker_registry_image.java[0].name
   pull_triggers = [data.docker_registry_image.java[0].sha256_digest]
 }
 
 resource "docker_image" "c" {
-  count = data.coder_parameter.docker_image.value == "c" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "c" ? 1 : 0
   name          = data.docker_registry_image.c[0].name
   pull_triggers = [data.docker_registry_image.c[0].sha256_digest]
 }
 
 resource "docker_image" "go" {
-  count = data.coder_parameter.docker_image.value == "go" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "go" ? 1 : 0
   name          = data.docker_registry_image.go[0].name
   pull_triggers = [data.docker_registry_image.go[0].sha256_digest]
 }
 
 resource "docker_image" "rust" {
-  count = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
   name          = data.docker_registry_image.rust[0].name
   pull_triggers = [data.docker_registry_image.rust[0].sha256_digest]
 }
 
 # resource "docker_image" "docker" {
-#   count = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
+#   count         = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
 #   name          = data.docker_registry_image.docker[0].name
 #   pull_triggers = [data.docker_registry_image.docker[0].sha256_digest]
 # }
 
 resource "docker_image" "embedded" {
-  count = data.coder_parameter.docker_image.value == "embedded" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "embedded" ? 1 : 0
   name          = data.docker_registry_image.embedded[0].name
   pull_triggers = [data.docker_registry_image.embedded[0].sha256_digest]
 }
 
 resource "docker_image" "base" {
-  count = data.coder_parameter.docker_image.value == "base" ? 1 : 0
+  count         = data.coder_parameter.docker_image.value == "base" ? 1 : 0
   name          = data.docker_registry_image.base[0].name
   pull_triggers = [data.docker_registry_image.base[0].sha256_digest]
 }

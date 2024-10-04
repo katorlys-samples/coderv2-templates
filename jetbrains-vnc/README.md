@@ -7,7 +7,7 @@ verified: true
 tags: [local, docker, jetbrains, browser, vnc]
 ---
 
-# Default
+# JetBrains VNC
 Workspace with JetBrains IDE in the browser.
 
 Uses VNC to display JetBrains IDE, and noVNC to connect to VNC in the browser.
