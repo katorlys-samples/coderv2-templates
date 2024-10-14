@@ -80,19 +80,19 @@ data "coder_parameter" "docker_image" {
   }
 }
 
-module "dotfiles" {
-  source   = "registry.coder.com/modules/dotfiles/coder"
-  version  = "1.0.15"
-  agent_id = coder_agent.main.id
-}
+# module "dotfiles" {
+#   source   = "registry.coder.com/modules/dotfiles/coder"
+#   version  = "1.0.15"
+#   agent_id = coder_agent.main.id
+# }
 
-module "dotfiles-root" {
-  source       = "registry.coder.com/modules/dotfiles/coder"
-  version      = "1.0.15"
-  agent_id     = coder_agent.main.id
-  user         = "root"
-  dotfiles_uri = module.dotfiles.dotfiles_uri
-}
+# module "dotfiles-root" {
+#   source       = "registry.coder.com/modules/dotfiles/coder"
+#   version      = "1.0.15"
+#   agent_id     = coder_agent.main.id
+#   user         = "root"
+#   dotfiles_uri = module.dotfiles.dotfiles_uri
+# }
 
 module "personalize" {
   source   = "registry.coder.com/modules/personalize/coder"
@@ -119,14 +119,14 @@ resource "coder_app" "novnc" {
   order         = 4
 }
 
-module "vscode-web" {
-  source         = "registry.coder.com/modules/vscode-web/coder"
-  version        = "1.0.14"
-  agent_id       = coder_agent.main.id
-  folder         = "/workspace/${module.git_clone.folder_name}"
-  accept_license = true
-  order          = 5
-}
+# module "vscode-web" {
+#   source         = "registry.coder.com/modules/vscode-web/coder"
+#   version        = "1.0.14"
+#   agent_id       = coder_agent.main.id
+#   folder         = "/workspace/${module.git_clone.folder_name}"
+#   accept_license = true
+#   order          = 5
+# }
 
 # resource "coder_app" "code-server" {
 #   agent_id     = coder_agent.main.id
@@ -137,6 +137,16 @@ module "vscode-web" {
 #   subdomain    = false
 #   share        = "owner"
 # }
+
+module "dotfiles-after-code-server" {
+  source         = "katorlys-samples/dotfiles-after-code-server/coder"
+  version        = "0.1.0"
+  agent_id       = coder_agent.main.id
+  folder         = "/workspace/${module.git_clone.folder_name}"
+  subdomain      = false
+  share          = "owner"
+  order          = 4
+}
 
 resource "docker_volume" "home_volume" {
   name = "coder-${data.coder_workspace.me.id}-home"

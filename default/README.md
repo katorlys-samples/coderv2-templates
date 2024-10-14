@@ -17,7 +17,7 @@ Ubuntu with customized coding environment.
 - Pre-made workspace images
 - Dotfiles
 - Personalize module
-- VS Code Web
+- code-server (VS Code browser)
 - VS Code Desktop button
 - Configurable JetBrains IDE Button
 

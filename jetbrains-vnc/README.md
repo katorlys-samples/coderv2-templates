@@ -17,7 +17,7 @@ Uses VNC to display JetBrains IDE, and noVNC to connect to VNC in the browser.
 - Git clone repository
 - Dotfiles
 - Personalize module
-- VS Code Web
+- code-server (VS Code browser)
 - VS Code Desktop button
 
 ## Preview

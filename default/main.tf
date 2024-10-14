@@ -190,14 +190,24 @@ module "jetbrains_gateway" {
 #   share        = "owner"
 # }
 
-module "dotfiles-after-vscode-web" {
-  source         = "katorlys-samples/dotfiles-after-vscode-web/coder"
+module "dotfiles-after-code-server" {
+  source         = "katorlys-samples/dotfiles-after-code-server/coder"
   version        = "0.1.0"
   agent_id       = coder_agent.main.id
   folder         = "/workspace/${module.git_clone.folder_name}"
-  accept_license = true
+  subdomain      = false
+  share          = "owner"
   order          = 4
 }
+
+# module "dotfiles-after-vscode-web" {
+#   source         = "katorlys-samples/dotfiles-after-vscode-web/coder"
+#   version        = "0.1.0"
+#   agent_id       = coder_agent.main.id
+#   folder         = "/workspace/${module.git_clone.folder_name}"
+#   accept_license = true
+#   order          = 4
+# }
 
 resource "docker_volume" "home_volume" {
   name = "coder-${data.coder_workspace.me.id}-home"
