@@ -24,10 +24,9 @@ locals {
   }
 }
 
-data "coder_provisioner" "me" {}
-
 provider "docker" {}
 
+data "coder_provisioner" "me" {}
 data "coder_workspace" "me" {}
 data "coder_workspace_owner" "me" {}
 
@@ -164,8 +163,8 @@ module "jetbrains_gateway" {
   source         = "registry.coder.com/modules/jetbrains-gateway/coder"
   version        = "1.0.13"
   agent_id       = coder_agent.main.id
-  agent_name     = "example"
-  folder         = "/home/coder/example"
+  agent_name     = "main"
+  folder         = "/workspace/${module.git_clone.folder_name}"
   jetbrains_ides = ["IU", "PY", "WS", "CL", "GO", "PS", "RM", "RD"]
   default        = "IU"
   order          = 5

@@ -1,0 +1,11 @@
+{
+    "image": "katorly/workspace-base:latest",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "hashicorp.terraform",
+          "hashicorp.hcl"
+        ]
+      }
+    }
+  }
