@@ -151,13 +151,13 @@ module "personalize" {
   agent_id = coder_agent.main.id
 }
 
-module "git-config" {
-  source                = "registry.coder.com/modules/git-config/coder"
-  version               = "1.0.15"
-  agent_id              = coder_agent.main.id
-  allow_username_change = true
-  allow_email_change    = true
-}
+# module "git-config" {
+#   source                = "registry.coder.com/modules/git-config/coder"
+#   version               = "1.0.15"
+#   agent_id              = coder_agent.main.id
+#   allow_username_change = true
+#   allow_email_change    = true
+# }
 
 module "jetbrains_gateway" {
   source         = "registry.coder.com/modules/jetbrains-gateway/coder"
