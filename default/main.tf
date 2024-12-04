@@ -18,7 +18,7 @@ locals {
     c        = docker_image.c,
     go       = docker_image.go,
     rust     = docker_image.rust,
-    # docker   = docker_image.docker,
+    docker   = docker_image.docker,
     embedded = docker_image.embedded,
     base     = docker_image.base,
   }
@@ -114,11 +114,11 @@ data "coder_parameter" "docker_image" {
     name  = "Rust"
     value = "rust"
   }
-  # option {
-  #   icon  = "/icon/docker-white.svg"
-  #   name  = "Docker"
-  #   value = "docker"
-  # }
+  option {
+    icon  = "/icon/docker-white.svg"
+    name  = "Docker"
+    value = "docker"
+  }
   option {
     icon  = "/icon/widgets.svg"
     name  = "Embedded Development"
@@ -265,10 +265,10 @@ data "docker_registry_image" "rust" {
   name  = "katorly/workspace-rust:latest"
 }
 
-# data "docker_registry_image" "docker" {
-#   count = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
-#   name  = "katorly/workspace-docker:latest"
-# }
+data "docker_registry_image" "docker" {
+  count = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
+  name  = "katorly/workspace-docker:latest"
+}
 
 data "docker_registry_image" "embedded" {
   count = data.coder_parameter.docker_image.value == "embedded" ? 1 : 0
@@ -316,11 +316,11 @@ resource "docker_image" "rust" {
   pull_triggers = [data.docker_registry_image.rust[0].sha256_digest]
 }
 
-# resource "docker_image" "docker" {
-#   count         = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
-#   name          = data.docker_registry_image.docker[0].name
-#   pull_triggers = [data.docker_registry_image.docker[0].sha256_digest]
-# }
+resource "docker_image" "docker" {
+  count         = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
+  name          = data.docker_registry_image.docker[0].name
+  pull_triggers = [data.docker_registry_image.docker[0].sha256_digest]
+}
 
 resource "docker_image" "embedded" {
   count         = data.coder_parameter.docker_image.value == "embedded" ? 1 : 0
@@ -337,6 +337,8 @@ resource "docker_image" "base" {
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
   image = local.images[data.coder_parameter.docker_image.value][0].image_id
+  # Set runtime to use Sysbox to allow Docker in Docker
+  runtime = "sysbox-runc"
   # Uses lower() to avoid Docker restriction on container names.
   name = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
   # Hostname makes the shell more user friendly: coder@my-workspace:~$

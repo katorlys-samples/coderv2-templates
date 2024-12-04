@@ -21,6 +21,9 @@ Ubuntu with customized coding environment.
 - VS Code Desktop button
 - Configurable JetBrains IDE Button
 
+## Requirements
+- [Sysbox](https://github.com/nestybox/sysbox) - for Docker in Docker support
+
 ## Preview
 ![screenshot-parameter](https://github.com/katorlys/coderv2-templates/blob/main/images/screenshot-default-parameters.png)
 
