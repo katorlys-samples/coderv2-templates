@@ -12,8 +12,10 @@ terraform {
 locals {
   username = data.coder_workspace_owner.me.name
   images = {
+    node     = docker_image.node,
     python   = docker_image.python,
     java     = docker_image.java,
+    rust     = docker_image.rust,
   }
 }
 
@@ -76,6 +78,16 @@ data "coder_parameter" "docker_image" {
     icon  = "/icon/pycharm.svg"
     name  = "PyCharm Community"
     value = "python"
+  }
+  option {
+    icon  = "/icon/webstorm.svg"
+    name  = "WebStorm"
+    value = "node"
+  }
+  option {
+    icon  = "/icon/rustrover.svg"
+    name  = "RustRover"
+    value = "rust"
   }
 }
 
@@ -184,6 +196,16 @@ data "docker_registry_image" "python" {
   name  = "katorly/vnc-pycharm-c:latest"
 }
 
+data "docker_registry_image" "node" {
+  count = data.coder_parameter.docker_image.value == "node" ? 1 : 0
+  name  = "katorly/vnc-webstorm:latest"
+}
+
+data "docker_registry_image" "rust" {
+  count = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
+  name  = "katorly/vnc-rustrover:latest"
+}
+
 resource "docker_image" "java" {
   count         = data.coder_parameter.docker_image.value == "java" ? 1 : 0
   name          = data.docker_registry_image.java[0].name
@@ -194,6 +216,18 @@ resource "docker_image" "python" {
   count         = data.coder_parameter.docker_image.value == "python" ? 1 : 0
   name          = data.docker_registry_image.python[0].name
   pull_triggers = [data.docker_registry_image.python[0].sha256_digest]
+}
+
+resource "docker_image" "node" {
+  count         = data.coder_parameter.docker_image.value == "node" ? 1 : 0
+  name          = data.docker_registry_image.node[0].name
+  pull_triggers = [data.docker_registry_image.node[0].sha256_digest]
+}
+
+resource "docker_image" "rust" {
+  count         = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
+  name          = data.docker_registry_image.rust[0].name
+  pull_triggers = [data.docker_registry_image.rust[0].sha256_digest]
 }
 
 resource "docker_container" "workspace" {
