@@ -196,6 +196,7 @@ module "dotfiles-after-code-server" {
   folder         = "/workspace/${module.git_clone.folder_name}"
   subdomain      = false
   share          = "owner"
+  default_dotfiles_uri = "https://github.com/katorly/dotfiles"
   order          = 4
 }
 
