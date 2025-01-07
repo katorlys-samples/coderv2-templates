@@ -268,7 +268,7 @@ data "docker_registry_image" "rust" {
 
 data "docker_registry_image" "docker" {
   count = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
-  name  = "katorly/workspace-docker:latest"
+  name  = "katorly/workspace-docker:2024.8.17"
 }
 
 data "docker_registry_image" "embedded" {
