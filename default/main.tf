@@ -11,16 +11,16 @@ terraform {
 
 locals {
   username = data.coder_workspace_owner.me.name
-  images = {
-    node     = docker_image.node,
-    python   = docker_image.python,
-    java     = docker_image.java,
-    c        = docker_image.c,
-    go       = docker_image.go,
-    rust     = docker_image.rust,
-    docker   = docker_image.docker,
-    embedded = docker_image.embedded,
-    base     = docker_image.base,
+  image_map = {
+    node     = "katorly/workspace-node:latest"
+    python   = "katorly/workspace-python:latest"
+    java     = "katorly/workspace-java:latest"
+    c        = "katorly/workspace-c:latest"
+    go       = "katorly/workspace-go:latest"
+    rust     = "katorly/workspace-rust:latest"
+    docker   = "katorly/workspace-docker:2024.8.17"
+    embedded = "katorly/workspace-embedded:latest"
+    base     = "katorly/workspace-base:latest"
   }
 }
 
@@ -65,15 +65,19 @@ resource "coder_agent" "main" {
 data "coder_parameter" "git_repo" {
   name         = "git_repo"
   display_name = "Git repository"
-  default      = "https://github.com/katorlys/Template"
+  default      = "https://github.com/katorlys-samples/Template"
 }
 
 module "git_clone" {
-  source   = "registry.coder.com/modules/git-clone/coder"
-  version  = "1.0.12"
+  source   = "registry.coder.com/coder/git-clone/coder"
+  version  = "~> 1.0"
   agent_id = coder_agent.main.id
   url      = data.coder_parameter.git_repo.value
   base_dir = "/workspace"
+}
+
+data "coder_external_auth" "github" {
+  id = "github"
 }
 
 data "coder_parameter" "docker_image" {
@@ -146,8 +150,8 @@ data "coder_parameter" "docker_image" {
 # }
 
 module "personalize" {
-  source   = "registry.coder.com/modules/personalize/coder"
-  version  = "1.0.2"
+  source   = "registry.coder.com/coder/personalize/coder"
+  version  = "~> 1.0"
   agent_id = coder_agent.main.id
 }
 
@@ -159,15 +163,13 @@ module "personalize" {
 #   allow_email_change    = true
 # }
 
-module "jetbrains_gateway" {
-  source         = "registry.coder.com/modules/jetbrains-gateway/coder"
-  version        = "1.0.13"
-  agent_id       = coder_agent.main.id
-  agent_name     = "main"
-  folder         = "/workspace/${module.git_clone.folder_name}"
-  jetbrains_ides = ["IU", "PY", "WS", "CL", "GO", "PS", "RM", "RD"]
-  default        = "IU"
-  order          = 5
+module "jetbrains" {
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/jetbrains/coder"
+  version    = "~> 1.0"
+  agent_id   = coder_agent.main.id
+  agent_name = "main"
+  folder     = "/workspace/${module.git_clone.folder_name}"
 }
 
 # module "vscode-web" {
@@ -190,8 +192,9 @@ module "jetbrains_gateway" {
 # }
 
 module "dotfiles-after-code-server" {
+  count          = data.coder_workspace.me.start_count
   source         = "katorlys-samples/dotfiles-after-code-server/coder"
-  version        = "0.1.0"
+  version        = "~> 0.1"
   agent_id       = coder_agent.main.id
   folder         = "/workspace/${module.git_clone.folder_name}"
   subdomain      = false
@@ -202,10 +205,11 @@ module "dotfiles-after-code-server" {
 
 # module "dotfiles-after-vscode-web" {
 #   source         = "katorlys-samples/dotfiles-after-vscode-web/coder"
-#   version        = "0.1.0"
+#   version        = "~> 0.1"
 #   agent_id       = coder_agent.main.id
 #   folder         = "/workspace/${module.git_clone.folder_name}"
 #   accept_license = true
+#   default_dotfiles_uri = "https://github.com/katorly/dotfiles"
 #   order          = 4
 # }
 
@@ -236,116 +240,15 @@ resource "docker_volume" "home_volume" {
   }
 }
 
-data "docker_registry_image" "node" {
-  count = data.coder_parameter.docker_image.value == "node" ? 1 : 0
-  name  = "katorly/workspace-node:latest"
-}
-
-data "docker_registry_image" "python" {
-  count = data.coder_parameter.docker_image.value == "python" ? 1 : 0
-  name  = "katorly/workspace-python:latest"
-}
-
-data "docker_registry_image" "java" {
-  count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
-  name  = "katorly/workspace-java:latest"
-}
-
-data "docker_registry_image" "c" {
-  count = data.coder_parameter.docker_image.value == "c" ? 1 : 0
-  name  = "katorly/workspace-c:latest"
-}
-
-data "docker_registry_image" "go" {
-  count = data.coder_parameter.docker_image.value == "go" ? 1 : 0
-  name  = "katorly/workspace-go:latest"
-}
-
-data "docker_registry_image" "rust" {
-  count = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
-  name  = "katorly/workspace-rust:latest"
-}
-
-data "docker_registry_image" "docker" {
-  count = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
-  name  = "katorly/workspace-docker:2024.8.17"
-}
-
-data "docker_registry_image" "embedded" {
-  count = data.coder_parameter.docker_image.value == "embedded" ? 1 : 0
-  name  = "katorly/workspace-embedded:latest"
-}
-
-data "docker_registry_image" "base" {
-  count = data.coder_parameter.docker_image.value == "base" ? 1 : 0
-  name  = "katorly/workspace-base:latest"
-}
-
-resource "docker_image" "node" {
-  count         = data.coder_parameter.docker_image.value == "node" ? 1 : 0
-  name          = data.docker_registry_image.node[0].name
-  pull_triggers = [data.docker_registry_image.node[0].sha256_digest]
-}
-
-resource "docker_image" "python" {
-  count         = data.coder_parameter.docker_image.value == "python" ? 1 : 0
-  name          = data.docker_registry_image.python[0].name
-  pull_triggers = [data.docker_registry_image.python[0].sha256_digest]
-}
-
-resource "docker_image" "java" {
-  count         = data.coder_parameter.docker_image.value == "java" ? 1 : 0
-  name          = data.docker_registry_image.java[0].name
-  pull_triggers = [data.docker_registry_image.java[0].sha256_digest]
-}
-
-resource "docker_image" "c" {
-  count         = data.coder_parameter.docker_image.value == "c" ? 1 : 0
-  name          = data.docker_registry_image.c[0].name
-  pull_triggers = [data.docker_registry_image.c[0].sha256_digest]
-}
-
-resource "docker_image" "go" {
-  count         = data.coder_parameter.docker_image.value == "go" ? 1 : 0
-  name          = data.docker_registry_image.go[0].name
-  pull_triggers = [data.docker_registry_image.go[0].sha256_digest]
-}
-
-resource "docker_image" "rust" {
-  count         = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
-  name          = data.docker_registry_image.rust[0].name
-  pull_triggers = [data.docker_registry_image.rust[0].sha256_digest]
-}
-
-resource "docker_image" "docker" {
-  count         = data.coder_parameter.docker_image.value == "docker" ? 1 : 0
-  name          = data.docker_registry_image.docker[0].name
-  pull_triggers = [data.docker_registry_image.docker[0].sha256_digest]
-}
-
-resource "docker_image" "embedded" {
-  count         = data.coder_parameter.docker_image.value == "embedded" ? 1 : 0
-  name          = data.docker_registry_image.embedded[0].name
-  pull_triggers = [data.docker_registry_image.embedded[0].sha256_digest]
-}
-
-resource "docker_image" "base" {
-  count         = data.coder_parameter.docker_image.value == "base" ? 1 : 0
-  name          = data.docker_registry_image.base[0].name
-  pull_triggers = [data.docker_registry_image.base[0].sha256_digest]
-}
-
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = local.images[data.coder_parameter.docker_image.value][0].image_id
+  image = local.image_map[data.coder_parameter.docker_image.value]
   # Set runtime to use Sysbox to allow Docker in Docker
   runtime = "sysbox-runc"
   # Uses lower() to avoid Docker restriction on container names.
   name = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
   # Hostname makes the shell more user friendly: coder@my-workspace:~$
   hostname = data.coder_workspace.me.name
-  # Use Cloudflare DNS
-  dns = ["1.1.1.1"]
   # Use the docker gateway if the access URL is 127.0.0.1
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
   env        = [

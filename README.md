@@ -28,7 +28,7 @@ Workspace templates for Coder Cloud Development Environments v2 OSS in HashiCorp
 
 ## Usage
 Choose a template in the folders (except the `images` folder), and upload all the files in the folder.  
-![upload-templates](images/upload-templates.png)
+![upload-templates](img/upload-templates.png)
 
 For more information about creating and using a template, please refer to [Templates - Coder Docs](https://coder.com/docs/templates).
 

@@ -21,6 +21,6 @@ Uses VNC to display JetBrains IDE, and noVNC to connect to VNC in the browser.
 - VS Code Desktop button
 
 ## Preview
-![screenshot-parameter](https://github.com/katorlys/coderv2-templates/blob/main/images/screenshot-jetbrains-vnc-parameters.png)
+![screenshot-parameter](https://github.com/katorlys/coderv2-templates/blob/main/img/screenshot-jetbrains-vnc-parameters.png)
 
-![screenshot-app](https://github.com/katorlys/coderv2-templates/blob/main/images/screenshot-jetbrains-vnc-app.png)
+![screenshot-app](https://github.com/katorlys/coderv2-templates/blob/main/img/screenshot-jetbrains-vnc-app.png)
