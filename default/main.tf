@@ -18,7 +18,7 @@ locals {
     c        = "katorly/workspace-c:latest"
     go       = "katorly/workspace-go:latest"
     rust     = "katorly/workspace-rust:latest"
-    docker   = "katorly/workspace-docker:2024.8.17"
+    docker   = "katorly/workspace-docker:latest"
     embedded = "katorly/workspace-embedded:latest"
     base     = "katorly/workspace-base:latest"
   }
