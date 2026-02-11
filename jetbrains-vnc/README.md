@@ -1,7 +1,7 @@
 ---
 display_name: JetBrains VNC
 description: Workspace with JetBrains IDE in the browser.
-icon: ../../../site/static/icon/projector.svg
+icon: /icon/projector.svg
 maintainer_github: katorlys
 verified: true
 tags: [local, docker, jetbrains, browser, vnc]

@@ -11,11 +11,11 @@ terraform {
 
 locals {
   username = data.coder_workspace_owner.me.name
-  images = {
-    node     = docker_image.node,
-    python   = docker_image.python,
-    java     = docker_image.java,
-    rust     = docker_image.rust,
+  image_map = {
+    java     = "katorly/vnc-intellij-c:latest"
+    python   = "katorly/vnc-pycharm-c:latest"
+    node     = "katorly/vnc-webstorm:latest"
+    rust     = "katorly/vnc-rustrover:latest"
   }
 }
 
@@ -50,15 +50,19 @@ resource "coder_agent" "main" {
 data "coder_parameter" "git_repo" {
   name         = "git_repo"
   display_name = "Git repository"
-  default      = "https://github.com/katorlys/Template"
+  default      = "https://github.com/katorlys-samples/Template"
 }
 
 module "git_clone" {
-  source   = "registry.coder.com/modules/git-clone/coder"
-  version  = "1.0.12"
+  source   = "registry.coder.com/coder/git-clone/coder"
+  version  = "~> 1.0"
   agent_id = coder_agent.main.id
   url      = data.coder_parameter.git_repo.value
   base_dir = "/workspace"
+}
+
+data "coder_external_auth" "github" {
+  id = "github"
 }
 
 data "coder_parameter" "docker_image" {
@@ -106,8 +110,8 @@ data "coder_parameter" "docker_image" {
 # }
 
 module "personalize" {
-  source   = "registry.coder.com/modules/personalize/coder"
-  version  = "1.0.2"
+  source   = "registry.coder.com/coder/personalize/coder"
+  version  = "~> 1.0"
   agent_id = coder_agent.main.id
 }
 
@@ -150,8 +154,9 @@ resource "coder_app" "novnc" {
 # }
 
 module "dotfiles-after-code-server" {
+  count          = data.coder_workspace.me.start_count
   source         = "katorlys-samples/dotfiles-after-code-server/coder"
-  version        = "0.1.0"
+  version        = "~> 0.1"
   agent_id       = coder_agent.main.id
   folder         = "/workspace/${module.git_clone.folder_name}"
   subdomain      = false
@@ -187,59 +192,13 @@ resource "docker_volume" "home_volume" {
   }
 }
 
-data "docker_registry_image" "java" {
-  count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
-  name  = "katorly/vnc-intellij-c:latest"
-}
-
-data "docker_registry_image" "python" {
-  count = data.coder_parameter.docker_image.value == "python" ? 1 : 0
-  name  = "katorly/vnc-pycharm-c:latest"
-}
-
-data "docker_registry_image" "node" {
-  count = data.coder_parameter.docker_image.value == "node" ? 1 : 0
-  name  = "katorly/vnc-webstorm:latest"
-}
-
-data "docker_registry_image" "rust" {
-  count = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
-  name  = "katorly/vnc-rustrover:latest"
-}
-
-resource "docker_image" "java" {
-  count         = data.coder_parameter.docker_image.value == "java" ? 1 : 0
-  name          = data.docker_registry_image.java[0].name
-  pull_triggers = [data.docker_registry_image.java[0].sha256_digest]
-}
-
-resource "docker_image" "python" {
-  count         = data.coder_parameter.docker_image.value == "python" ? 1 : 0
-  name          = data.docker_registry_image.python[0].name
-  pull_triggers = [data.docker_registry_image.python[0].sha256_digest]
-}
-
-resource "docker_image" "node" {
-  count         = data.coder_parameter.docker_image.value == "node" ? 1 : 0
-  name          = data.docker_registry_image.node[0].name
-  pull_triggers = [data.docker_registry_image.node[0].sha256_digest]
-}
-
-resource "docker_image" "rust" {
-  count         = data.coder_parameter.docker_image.value == "rust" ? 1 : 0
-  name          = data.docker_registry_image.rust[0].name
-  pull_triggers = [data.docker_registry_image.rust[0].sha256_digest]
-}
-
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = local.images[data.coder_parameter.docker_image.value][0].image_id
+  image = local.image_map[data.coder_parameter.docker_image.value]
   # Uses lower() to avoid Docker restriction on container names.
   name = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
   # Hostname makes the shell more user friendly: coder@my-workspace:~$
   hostname = data.coder_workspace.me.name
-  # Use Cloudflare DNS
-  dns = ["1.1.1.1"]
   # Use the docker gateway if the access URL is 127.0.0.1
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
   env        = [
