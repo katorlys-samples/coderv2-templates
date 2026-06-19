@@ -1,5 +1,5 @@
 {
-    "image": "katorly/workspace-base:latest",
+    "image": "katorlys/workspace-base:latest",
     "customizations": {
       "vscode": {
         "extensions": [

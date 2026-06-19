@@ -12,15 +12,15 @@ terraform {
 locals {
   username = data.coder_workspace_owner.me.name
   image_map = {
-    node     = "katorly/workspace-node:latest"
-    python   = "katorly/workspace-python:latest"
-    java     = "katorly/workspace-java:latest"
-    c        = "katorly/workspace-c:latest"
-    go       = "katorly/workspace-go:latest"
-    rust     = "katorly/workspace-rust:latest"
-    docker   = "katorly/workspace-docker:latest"
-    embedded = "katorly/workspace-embedded:latest"
-    base     = "katorly/workspace-base:latest"
+    node     = "katorlys/workspace-node:latest"
+    python   = "katorlys/workspace-python:latest"
+    java     = "katorlys/workspace-java:latest"
+    c        = "katorlys/workspace-c:latest"
+    go       = "katorlys/workspace-go:latest"
+    rust     = "katorlys/workspace-rust:latest"
+    docker   = "katorlys/workspace-docker:latest"
+    embedded = "katorlys/workspace-embedded:latest"
+    base     = "katorlys/workspace-base:latest"
   }
 }
 

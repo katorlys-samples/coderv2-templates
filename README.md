@@ -6,7 +6,7 @@
 </a><br> -->
 
 <h1>
-  coderv2-templates
+  CoderV2 Templates
 </h1>
 
 <p>
